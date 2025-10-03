@@ -1,0 +1,127 @@
+"Ride Base Class"
+Object subclass: Ride [
+    | rideID pickupLocation dropoffLocation distance |
+
+    Ride class >> id: anId pickup: pickup dropoff: dropoff distance: dist [
+        ^ self new initId: anId pickup: pickup dropoff: dropoff distance: dist
+    ]
+
+    initId: anId pickup: pickup dropoff: dropoff distance: dist [
+        rideID := anId.
+        pickupLocation := pickup.
+        dropoffLocation := dropoff.
+        distance := dist.
+        ^ self
+    ]
+
+    fare [ self subclassResponsibility ] "Abstract method"
+
+    rideDetails [
+        Transcript show: 'Ride ID: ', rideID printString; cr.
+        Transcript show: 'Pickup: ', pickupLocation; cr.
+        Transcript show: 'Dropoff: ', dropoffLocation; cr.
+        Transcript show: 'Distance: ', distance printString , ' miles'; cr.
+    ]
+]
+
+"StandardRide"
+Ride subclass: StandardRide [
+    fare [
+        ^ distance * 2
+    ]
+
+    rideDetails [
+        Transcript show: '[Standard Ride]'; cr.
+        super rideDetails.
+        Transcript show: 'Fare: $', (self fare) printString; cr.
+    ]
+]
+
+"PremiumRide"
+Ride subclass: PremiumRide [
+    fare [
+        ^ distance * 3.5
+    ]
+
+    rideDetails [
+        Transcript show: '[Premium Ride]'; cr.
+        super rideDetails.
+        Transcript show: 'Fare: $', (self fare) printString; cr.
+    ]
+]
+
+"Driver Class"
+Object subclass: Driver [
+    | driverID name rating assignedRides |
+
+    Driver class >> id: anId name: aName rating: aRating [
+        ^ self new initId: anId name: aName rating: aRating
+    ]
+
+    initId: anId name: aName rating: aRating [
+        driverID := anId.
+        name := aName.
+        rating := aRating.
+        assignedRides := OrderedCollection new.
+        ^ self
+    ]
+
+    addRide: aRide [
+        assignedRides add: aRide.
+    ]
+
+    getDriverInfo [
+        Transcript show: 'Driver ID: ', driverID printString; cr.
+        Transcript show: 'Name: ', name; cr.
+        Transcript show: 'Rating: ', rating printString; cr.
+        Transcript show: 'Assigned Rides: ', assignedRides size printString; cr.
+    ]
+]
+
+"Rider Class"
+Object subclass: Rider [
+    | riderID name requestedRides |
+
+    Rider class >> id: anId name: aName [
+        ^ self new initId: anId name: aName
+    ]
+
+    initId: anId name: aName [
+        riderID := anId.
+        name := aName.
+        requestedRides := OrderedCollection new.
+        ^ self
+    ]
+
+    requestRide: aRide [
+        requestedRides add: aRide.
+    ]
+
+    viewRides [
+        Transcript show: 'Rider: ', name, ' has requested ', requestedRides size printString, ' rides.'; cr.
+        requestedRides do: [:ride |
+            ride rideDetails.
+            Transcript show: '-------------------'; cr.
+        ].
+    ]
+]
+
+"Demo"
+| r1 r2 driver rider rides |
+r1 := StandardRide id: 1 pickup: 'Downtown' dropoff: 'Airport' distance: 10.
+r2 := PremiumRide id: 2 pickup: 'Mall' dropoff: 'Hotel' distance: 5.
+
+rides := { r1. r2 }.
+
+Transcript show: '=== Ride Details (Polymorphism Demo) ==='; cr.
+rides do: [:r | r rideDetails. Transcript show: '-------------------'; cr.].
+
+driver := Driver id: 101 name: 'Alice' rating: 4.9.
+driver addRide: r1.
+driver addRide: r2.
+driver getDriverInfo.
+
+rider := Rider id: 201 name: 'Bob'.
+rider requestRide: r1.
+rider requestRide: r2.
+rider viewRides.
